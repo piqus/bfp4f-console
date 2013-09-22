@@ -49,7 +49,7 @@ class DB
 	public static function getLatestMessages($table, $limit)
 	{
 
-		$query = "SELECT * FROM {$table} ORDER BY datetime LIMIT :limit";
+		$query = "SELECT *, TIME(datetime) as date FROM {$table} ORDER BY datetime LIMIT :limit";
 
 		$stmt = self::$_db->prepare($query);
 		$stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
@@ -104,12 +104,12 @@ class DB
 		return (object) $response;
 	}
 
-	public static function addChatLog($table, $message, $origin, $time, $type)
+	public static function addChatLog($table, $message, $origin, $datetime, $type)
 	{
-		$query  = "INSERT INTO " . $table . " ";
-		$query .= "(origin, type, message, time) ";
-		$query .= "VALUES ";
-		$query .= "(:origin, :type, :message, :time);";
+		$query  = "INSERT INTO {$table} 
+					(origin, type, message, datetime) 
+					VALUES 
+					(:origin, :type, :message, :datetime);";
 
 		$stmt = self::$_db->prepare($query);
 
@@ -119,7 +119,7 @@ class DB
 		$stmt->bindParam(':type', $type, PDO::PARAM_INT);
 		$stmt->bindParam(':message', $message, PDO::PARAM_STR);
 		// $date = date("Y-m-d H:i:s");
-		$stmt->bindParam(':time', $time, PDO::PARAM_STR);
+		$stmt->bindParam(':datetime', $datetime, PDO::PARAM_STR);
 
 		return $stmt->execute();
 	}
@@ -242,6 +242,23 @@ class DB
 		$stmt = self::$_db->prepare($query);
 		$stmt->bindParam(":context", $context, PDO::PARAM_STR);
 		return $stmt->execute();
+	}
+
+	public static function getKicksByPlayer($table, $profile_id, $soldier_id)
+	{
+		// Here is kind of question: NOW() or CURRENT_TIMESTAMP
+		$query = "SELECT expiration_date, TIMEDIFF(CURRENT_TIMESTAMP, expiration_date) as 'remaining' 
+					FROM {$table} 
+					WHERE profile_id = :profile_id, soldier_id = :soldier_id
+					ORDER BY expiration_date";
+		$stmt = self::$_db->prepare($query);
+		$stmt->bindParam(":profile_id", $profile_id, PDO::PARAM_STR);
+		$stmt->bindParam(":soldier_id", $soldier_id, PDO::PARAM_STR);
+		if ($stmt->execute() && $result = $stmt->fetch(PDO::FETCH_OBJ)) {
+			return $result;
+		} else {
+			return false;
+		}
 	}
 
 	

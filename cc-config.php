@@ -22,7 +22,7 @@
 date_default_timezone_set('UTC');
 
 // Load composer vendors 
-define('VENDOR_DIR', __DIR__ . '/test-rcon');
+define('VENDOR_DIR', __DIR__ . '/test-vendor');
 
 /* Load Classes for COMPOSER
  ***************************/
