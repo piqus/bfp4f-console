@@ -1,0 +1,13 @@
+{
+	"require": {
+		"piqus/bfp4f-rcon": "dev-master"
+		},
+	"autoload": {
+		"classmap": [
+			"src/console"
+		]
+	},
+	"config": {
+        "vendor-dir": "vendor"
+    }
+}
