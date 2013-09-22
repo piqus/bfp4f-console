@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 18, 2013 at 11:02 AM
+-- Generation Time: Sep 22, 2013 at 02:17 PM
 -- Server version: 5.1.70-community
 -- PHP Version: 5.4.14
 
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `cc_admins` (
 --
 
 INSERT INTO `cc_admins` (`admin_id`, `soldier_name`, `profile_id`, `soldier_id`, `active`, `level`) VALUES
-(1, 'piqus.pl', 2627733530, 609452444, 1, 50);
+(1, 'piqus.pl', 2627733530, 609452444, 0, 50);
 
 -- --------------------------------------------------------
 
@@ -56,14 +56,14 @@ CREATE TABLE IF NOT EXISTS `cc_chat_log` (
   `message` varchar(255) NOT NULL,
   `datetime` datetime NOT NULL,
   PRIMARY KEY (`chat_log_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
 
 --
 -- Dumping data for table `cc_chat_log`
 --
 
 INSERT INTO `cc_chat_log` (`chat_log_id`, `origin`, `type`, `message`, `datetime`) VALUES
-(1, 'piqus.pl', 'Global', '', '2013-09-07 23:36:39');
+(6, 'piqus.pl', 'ServerMessage', '!test piqus', '2013-09-22 19:14:15');
 
 -- --------------------------------------------------------
 
@@ -79,18 +79,18 @@ CREATE TABLE IF NOT EXISTS `cc_commands` (
   `count_params` tinyint(4) NOT NULL DEFAULT '0',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`command_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=23 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=24 ;
 
 --
 -- Dumping data for table `cc_commands`
 --
 
 INSERT INTO `cc_commands` (`command_id`, `name`, `class`, `method`, `count_params`, `active`) VALUES
-(1, 'Send Global Message', 'CommonCommands', 'sendMsg', 1, 1),
+(1, 'Send Global Message', 'CommonCommands', 'sendMsg', 0, 1),
 (2, 'Check Ping', 'CommonCommands', 'showPing', 0, 1),
 (3, 'Report Issue/Player', 'CommonCommands', 'report', 1, 1),
+(4, 'Send Private Message', 'CommonCommands', 'sendPM', 1, 1),
 (8, 'Kick Player', 'CommonCommands', 'kickPlayer', 1, 1),
-(9, 'Send Private Message', 'CommonCommands', 'sendPM', 1, 1),
 (10, 'Switch Autobalance', 'CommonCommands', 'switchAutobalance', 1, 1),
 (11, 'Restart Round', 'CommonCommands', 'restart', 0, 1),
 (12, 'Warn Player', 'CommonCommands', 'warnPlayer', 1, 1),
@@ -103,7 +103,8 @@ INSERT INTO `cc_commands` (`command_id`, `name`, `class`, `method`, `count_param
 (19, 'List Admins (online, all)', 'CommonCommands', 'listAdmins', 0, 1),
 (20, 'Search for Admin', 'CommonCommands', 'searchAdmin', 0, 1),
 (21, 'List Available Commands', 'CommonCommands', 'listAvailableCommands', 0, 1),
-(22, 'Next Map (Skip)', 'CommonCommands', 'nextMap', 0, 1);
+(22, 'Next Map (Skip)', 'CommonCommands', 'nextMap', 0, 1),
+(23, 'Switch Player', 'CommonCommands', 'switch', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -131,7 +132,7 @@ CREATE TABLE IF NOT EXISTS `cc_kicked_players` (
   `soldier_id` bigint(20) NOT NULL,
   `date_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `reason` varchar(100) NOT NULL,
-  `expiration_date` datetime NOT NULL DEFAULT '9999-12-31 23:59:59',
+  `expiration_date` datetime DEFAULT '9999-12-31 23:59:59',
   PRIMARY KEY (`kick_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
 
@@ -160,7 +161,7 @@ CREATE TABLE IF NOT EXISTS `cc_reports` (
   `s_soldier_id` bigint(20) DEFAULT NULL COMMENT 'suspect player soldier id',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`report_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=12 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=13 ;
 
 --
 -- Dumping data for table `cc_reports`
@@ -168,7 +169,8 @@ CREATE TABLE IF NOT EXISTS `cc_reports` (
 
 INSERT INTO `cc_reports` (`report_id`, `reporter`, `suspect`, `issue`, `date_created`, `r_profile_id`, `r_soldier_id`, `s_profile_id`, `s_soldier_id`, `active`) VALUES
 (10, 'piqus.pl', NULL, '', '2013-09-08 19:17:46', 2627733530, 609452444, NULL, NULL, 1),
-(11, 'piqus.pl', NULL, 'nooooooooob ', '2013-09-08 19:20:58', 2627733530, 609452444, NULL, NULL, 1);
+(11, 'piqus.pl', NULL, 'nooooooooob ', '2013-09-08 19:20:58', 2627733530, 609452444, NULL, NULL, 1),
+(12, 'piqus.pl', 'piqus.pl', 'he is noob', '2013-09-21 16:00:06', 2627733530, 609452444, 2627733530, 609452444, 1);
 
 -- --------------------------------------------------------
 
@@ -195,21 +197,32 @@ CREATE TABLE IF NOT EXISTS `cc_tick_events` (
 CREATE TABLE IF NOT EXISTS `cc_user_commands` (
   `user_command_id` int(11) NOT NULL AUTO_INCREMENT,
   `alias` varchar(50) NOT NULL,
+  `description` varchar(255) NOT NULL DEFAULT '<description>',
   `command_id` int(11) NOT NULL,
-  `args` varchar(500) NOT NULL COMMENT 'encoded in json',
+  `args` varchar(500) NOT NULL DEFAULT '[]' COMMENT 'encoded in json',
   `required_level` smallint(5) unsigned NOT NULL DEFAULT '0',
   `date_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `enabled` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`user_command_id`),
   KEY `command_id` (`command_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=12 ;
 
 --
 -- Dumping data for table `cc_user_commands`
 --
 
-INSERT INTO `cc_user_commands` (`user_command_id`, `alias`, `command_id`, `args`, `required_level`, `date_created`, `enabled`) VALUES
-(1, 'test', 22, '[]', 0, '2013-09-07 21:26:00', 1);
+INSERT INTO `cc_user_commands` (`user_command_id`, `alias`, `description`, `command_id`, `args`, `required_level`, `date_created`, `enabled`) VALUES
+(1, 'say', '<description>', 1, '[]', 0, '2013-09-07 21:26:00', 1),
+(2, 'ping', '<description>', 2, '[]', 0, '2013-09-21 17:33:05', 1),
+(3, 'r', '<description>', 3, '[]', 0, '2013-09-21 17:33:33', 1),
+(4, 'k', '<description>', 8, '[]', 50, '2013-09-21 17:34:32', 1),
+(5, 'pm', 'Sends a PM to selected player', 4, '[]', 50, '2013-09-21 17:36:29', 1),
+(6, 'ab', '<description>', 10, '[]', 100, '2013-09-21 17:37:19', 1),
+(7, 'admins', '<description>', 19, '[]', 0, '2013-09-21 17:38:16', 1),
+(8, 'ban', '<description>', 13, '[]', 50, '2013-09-22 16:52:20', 1),
+(9, 'bm', 'Modmanager ban', 18, '[]', 50, '2013-09-22 16:53:14', 1),
+(10, 'skip', 'Skips to next', 22, '[]', 100, '2013-09-22 16:53:55', 1),
+(11, 'warn', '<description>', 12, '[]', 50, '2013-09-22 16:54:33', 1);
 
 -- --------------------------------------------------------
 
